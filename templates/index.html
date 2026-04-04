@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WordWise — Discover Words & Phrases</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #09090f;
+      --surface: #111119;
+      --surface2: #18181f;
+      --border: #252535;
+      --border2: #353550;
+      --text: #e8e8f2;
+      --text2: #9090b4;
+      --text3: #55556a;
+      --accent: #7c6af7;
+      --accent2: #a78bfa;
+      --gold: #f0c060;
+      --mint: #5de8b0;
+      --rose: #f06080;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 6rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .logo-icon {
+      background: var(--accent);
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 30px rgba(124,106,247,0.4);
+    }
+
+    .tagline {
+      color: var(--text3);
+      font-size: 0.88rem;
+      font-family: 'DM Mono', monospace;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Search ── */
+    .search-box {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 660px;
+      margin: 0 auto 0.75rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1.25rem;
+      font-size: 1rem;
+      font-family: 'Syne', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: var(--text3); }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
+    }
+
+    .btn-search {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0.9rem 1.6rem;
+      font-size: 0.95rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(124,106,247,0.3);
+      white-space: nowrap;
+    }
+
+    .btn-search:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .current-kw {
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text3);
+      margin-bottom: 1.5rem;
+    }
+
+    .current-kw span { color: var(--accent2); }
+
+    /* ── Quick suggestions ── */
+    .suggestions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.7rem 1.25rem;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab:hover { color: var(--text2); }
+
+    .tab.active {
+      color: var(--text);
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.1rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.35rem;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease forwards;
+      opacity: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 10px 36px rgba(0,0,0,0.35); }
+    .card:hover::before { opacity: 1; }
+
+    .card-phrase::before {
+      background: linear-gradient(90deg, var(--mint), var(--accent));
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .word-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    .phrase-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-style: italic;
+      line-height: 1.3;
+    }
+
+    .pronunciation {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text3);
+      display: block;
+      margin-top: 0.15rem;
+    }
+
+    /* ── Save button ── */
+    .btn-save {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      font-size: 1.05rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-save:hover, .btn-save.saved {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(240,192,96,0.08);
+    }
+
+    /* ── Meta tags ── */
+    .meta {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 0.7rem;
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 5px;
+    }
+
+    .tag-pos {
+      color: var(--accent2);
+      background: rgba(124,106,247,0.1);
+      border: 1px solid rgba(124,106,247,0.2);
+    }
+
+    .tag-beginner { color: var(--mint); }
+    .tag-intermediate { color: var(--gold); }
+    .tag-advanced { color: var(--rose); }
+
+    .tag-category {
+      border: 1px solid currentColor;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .tag-trending { color: var(--gold); }
+
+    /* ── Meaning ── */
+    .meaning {
+      color: var(--text2);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 0.85rem;
+    }
+
+    /* ── Example ── */
+    .example-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .example-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .example-text {
+      color: var(--text2);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* ── Synonyms ── */
+    .synonyms {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .synonym {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 0.18rem 0.55rem;
+      border-radius: 5px;
+    }
+
+    /* ── Saved section ── */
+    .saved-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text3);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .btn-remove {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      font-size: 0.75rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-remove:hover {
+      border-color: var(--rose);
+      color: var(--rose);
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--text3);
+    }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 1rem;
+      opacity: 0.4;
+    }
+
+    .empty p { margin-bottom: 0.4rem; font-size: 0.95rem; }
+
+    /* ── Skeleton loading ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 16px;
+      height: 220px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Error ── */
+    .error-msg {
+      background: rgba(240,96,128,0.07);
+      border: 1px solid rgba(240,96,128,0.25);
+      color: var(--rose);
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Toast notification ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.65rem 1.4rem;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .search-box { flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      .logo { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">⌘</span>
+      WordWise
+    </div>
+    <p class="tagline">discover the words that shape your world</p>
+  </header>
+
+  <!-- Search -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Enter a keyword… e.g. technology, love, nature" />
+    <button class="btn-search" id="searchBtn" onclick="doSearch()">Explore →</button>
+  </div>
+
+  <p class="current-kw" id="currentKw"></p>
+
+  <!-- Quick suggestions -->
+  <div class="suggestions">
+    <button class="chip" onclick="quickSearch('Technology')">Technology</button>
+    <button class="chip" onclick="quickSearch('Love')">Love</button>
+    <button class="chip" onclick="quickSearch('Nature')">Nature</button>
+    <button class="chip" onclick="quickSearch('Business')">Business</button>
+    <button class="chip" onclick="quickSearch('Travel')">Travel</button>
+    <button class="chip" onclick="quickSearch('Food')">Food</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-words" onclick="switchTab('words')">🔤 Words</button>
+    <button class="tab" id="tab-phrases" onclick="switchTab('phrases')">💬 Phrases</button>
+    <button class="tab" id="tab-saved" onclick="switchTab('saved')">🔖 Saved <span id="savedCount"></span></button>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg" style="display:none;"></div>
+
+  <!-- Content panels -->
+  <div id="panel-words"></div>
+  <div id="panel-phrases" style="display:none;"></div>
+  <div id="panel-saved" style="display:none;"></div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  let currentKeyword = "";
+  let activeTab = "words";
+  let wordsData = [];
+  let phrasesData = [];
+
+  // ── Load saved items from localStorage ──
+  function getSaved() {
+    try { return JSON.parse(localStorage.getItem("wordwise_saved") || "[]"); }
+    catch { return []; }
+  }
+
+  function setSaved(items) {
+    localStorage.setItem("wordwise_saved", JSON.stringify(items));
+    updateSavedBadge();
+  }
+
+  function updateSavedBadge() {
+    const count = getSaved().length;
+    document.getElementById("savedCount").textContent = count > 0 ? `(${count})` : "";
+  }
+
+  // ── Search ──
+  function quickSearch(kw) {
+    document.getElementById("searchInput").value = kw;
+    doSearch();
+  }
+
+  function doSearch() {
+    const kw = document.getElementById("searchInput").value.trim();
+    if (!kw) return;
+    currentKeyword = kw;
+    wordsData = [];
+    phrasesData = [];
+    document.getElementById("currentKw").innerHTML = `Showing results for <span>"${kw}"</span>`;
+    fetchData(activeTab === "saved" ? "words" : activeTab);
+    if (activeTab === "saved") switchTab("words");
+  }
+
+  document.getElementById("searchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") doSearch();
+  });
+
+  // ── Tab switch ──
+  function switchTab(tab) {
+    activeTab = tab;
+
+    ["words", "phrases", "saved"].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+      document.getElementById(`panel-${t}`).style.display = t === tab ? "block" : "none";
+    });
+
+    if (tab === "saved") {
+      renderSaved();
+      return;
+    }
+
+    if (!currentKeyword) return;
+
+    if (tab === "words" && wordsData.length === 0) fetchData("words");
+    if (tab === "phrases" && phrasesData.length === 0) fetchData("phrases");
+  }
+
+  // ── Fetch from Flask API ──
+  async function fetchData(type) {
+    if (!currentKeyword) return;
+
+    setLoading(type);
+    hideError();
+
+    try {
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: currentKeyword, type })
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Something went wrong");
+
+      if (type === "words") {
+        wordsData = json.data;
+        renderWords();
+      } else {
+        phrasesData = json.data;
+        renderPhrases();
+      }
+
+    } catch (err) {
+      showError(err.message);
+      document.getElementById(`panel-${type}`).innerHTML = "";
+    }
+  }
+
+  function setLoading(type) {
+    const panel = document.getElementById(`panel-${type}`);
+    panel.innerHTML = `<div class="grid">${Array(6).fill('<div class="skeleton"></div>').join("")}</div>`;
+  }
+
+  // ── Render Words ──
+  function renderWords() {
+    const panel = document.getElementById("panel-words");
+    if (!wordsData.length) { panel.innerHTML = emptyState("No words found. Try again."); return; }
+
+    const saved = getSaved();
+    panel.innerHTML = `<div class="grid">` + wordsData.map((w, i) => {
+      const isSaved = saved.some(s => s.type === "word" && s.data.word === w.word);
+      const diffClass = w.difficulty ? `tag-${w.difficulty}` : "";
+      const categoryColors = { idiom:"#7c6af7", slang:"#f06080", formal:"#60b0f0", business:"#f0c060", everyday:"#5de8b0", literary:"#a78bfa" };
+
+      return `
+        <div class="card" style="animation-delay:${i*0.07}s">
+          <div class="card-top">
+            <div>
+              <div class="word-title">${w.word}</div>
+              ${w.pronunciation ? `<span class="pronunciation">${w.pronunciation}</span>` : ""}
+            </div>
+            <button class="btn-save ${isSaved ? "saved" : ""}" onclick="saveWord(${i})" title="Save word">
+              ${isSaved ? "★" : "☆"}
+            </button>
+          </div>
+          <div class="meta">
+            ${w.part_of_speech ? `<span class="tag tag-pos">${w.part_of_speech}</span>` : ""}
+            ${w.difficulty ? `<span class="tag ${diffClass}">● ${w.difficulty}</span>` : ""}
+          </div>
+          <p class="meaning">${w.meaning}</p>
+          <div class="example-box">
+            <span class="example-label">Example</span>
+            <p class="example-text">"${w.example}"</p>
+          </div>
+          ${w.synonyms && w.synonyms.length ? `
+            <div class="synonyms">
+              ${w.synonyms.map(s => `<span class="synonym">${s}</span>`).join("")}
+            </div>` : ""}
+        </div>`;
+    }).join("") + `</div>`;
+  }
+
+  // ── Render Phrases ──
+  function renderPhrases() {
+    const panel = document.getElementById("panel-phrases");
+    if (!phrasesData.length) { panel.innerHTML = emptyState("No phrases found. Try again."); return; }
+
+    const saved = getSaved();
+    const categoryColors = { idiom:"#7c6af7", slang:"#f06080", formal:"#60b0f0", business:"#f0c060", everyday:"#5de8b0", literary:"#a78bfa" };
+
+    panel.innerHTML = `<div class="grid">` + phrasesData.map((p, i) => {
+      const isSaved = saved.some(s => s.type === "phrase" && s.data.phrase === p.phrase);
+      const color = categoryColors[p.category] || "#a78bfa";
+
+      return `
+        <div class="card card-phrase" style="animation-delay:${i*0.07}s">
+          <div class="card-top">
+            <div class="phrase-title">${p.phrase}</div>
+            <button class="btn-save ${isSaved ? "saved" : ""}" onclick="savePhrase(${i})" title="Save phrase">
+              ${isSaved ? "★" : "☆"}
+            </button>
+          </div>
+          <div class="meta">
+            ${p.category ? `<span class="tag tag-category" style="color:${color};border-color:${color}">${p.category}</span>` : ""}
+            ${p.trending ? `<span class="tag tag-trending">🔥 trending</span>` : ""}
+          </div>
+          <p class="meaning">${p.meaning}</p>
+          <div class="example-box">
+            <span class="example-label">Example</span>
+            <p class="example-text">"${p.example}"</p>
+          </div>
+        </div>`;
+    }).join("") + `</div>`;
+  }
+
+  // ── Render Saved ──
+  function renderSaved() {
+    const saved = getSaved();
+    const panel = document.getElementById("panel-saved");
+
+    if (!saved.length) {
+      panel.innerHTML = `
+        <div class="empty">
+          <span class="empty-icon">🔖</span>
+          <p>Nothing saved yet.</p>
+          <p>Star a word or phrase to save it here!</p>
+        </div>`;
+      return;
+    }
+
+    panel.innerHTML = `<div class="grid">` + saved.map((item, i) => `
+      <div class="card ${item.type === "phrase" ? "card-phrase" : ""}" style="animation-delay:${i*0.06}s">
+        <div class="card-top">
+          <div>
+            <span class="saved-meta">${item.type === "word" ? "🔤 word" : "💬 phrase"} · from "${item.keyword}"</span>
+            <div class="${item.type === "word" ? "word-title" : "phrase-title"}">
+              ${item.type === "word" ? item.data.word : item.data.phrase}
+            </div>
+          </div>
+          <button class="btn-remove" onclick="removeSaved(${i})" title="Remove">✕</button>
+        </div>
+        <p class="meaning">${item.data.meaning}</p>
+        <div class="example-box">
+          <span class="example-label">Example</span>
+          <p class="example-text">"${item.data.example}"</p>
+        </div>
+      </div>`).join("") + `</div>`;
+  }
+
+  // ── Save / Remove ──
+  function saveWord(index) {
+    const item = wordsData[index];
+    const saved = getSaved();
+    if (saved.some(s => s.type === "word" && s.data.word === item.word)) return;
+    setSaved([{ type: "word", data: item, keyword: currentKeyword }, ...saved]);
+    showToast(`★ "${item.word}" saved!`);
+    renderWords();
+  }
+
+  function savePhrase(index) {
+    const item = phrasesData[index];
+    const saved = getSaved();
+    if (saved.some(s => s.type === "phrase" && s.data.phrase === item.phrase)) return;
+    setSaved([{ type: "phrase", data: item, keyword: currentKeyword }, ...saved]);
+    showToast(`★ "${item.phrase}" saved!`);
+    renderPhrases();
+  }
+
+  function removeSaved(index) {
+    const saved = getSaved();
+    saved.splice(index, 1);
+    setSaved(saved);
+    renderSaved();
+  }
+
+  // ── Helpers ──
+  function emptyState(msg) {
+    return `<div class="empty"><span class="empty-icon">✦</span><p>${msg}</p></div>`;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("errorMsg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("errorMsg").style.display = "none";
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
+  }
+
+  // Init
+  updateSavedBadge();
+</script>
+</body>
+</html>
