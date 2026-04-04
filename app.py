@@ -1,13 +1,22 @@
 from flask import Flask, render_template, request, jsonify
-from groq import Groq
 import os
-import dotenv
 import json
 
-dotenv.load_dotenv()
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None
 
 app = Flask(__name__)
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+
+def get_client():
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        raise Exception("GROQ_API_KEY is not set in environment variables")
+    if Groq is None:
+        raise Exception("groq package failed to import")
+    return Groq(api_key=api_key)
 
 
 @app.route("/")
@@ -53,8 +62,9 @@ Return ONLY a valid JSON array. Each object must have:
 No markdown, no explanation. Only the JSON array."""
 
     try:
+        client = get_client()
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="llama3-70b-8192",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=2048,
