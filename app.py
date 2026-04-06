@@ -16,7 +16,7 @@ def get_client():
         raise Exception("GROQ_API_KEY is not set in environment variables")
     if Groq is None:
         raise Exception("groq package failed to import")
-    return Groq(api_key=api_key)
+    return Groq(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
 
 @app.route("/")
